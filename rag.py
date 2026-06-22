@@ -17,7 +17,6 @@ Tennis is a dynamic, globally recognized racket sport that blends physical endur
 
 '''
 
-
 def create_kb():
     '''create a vector store'''
 
@@ -80,3 +79,6 @@ def demo_basic_rag():
         answer = rag_chain.invoke(q)
         print(f'q:{q}')
         print(f'A:{answer}\n')
+
+
+
