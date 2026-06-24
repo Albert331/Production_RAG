@@ -2,7 +2,7 @@ import time
 import os
 from contextlib import asynccontextmanager
 from datetime import datetime
-from fastapi import FastAPI,Request,HTTPException
+from fastapi import FastAPI,Request,HTTPException,UploadFile,File
 from fastapi.responses import JSONResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -17,6 +17,7 @@ from security import SecurePipeline, RequestTimer
 from cache import ResponseCache
 from monitoring import MetricsCollector
 from agent import productionAgent
+from ingestor import ingest_pdf
 
 load_dotenv()
 
@@ -46,6 +47,15 @@ app = FastAPI(
 )
 app.state.limiter = limiter
 
+@app.post('/upload')
+async def upload(file: UploadFile = File(...)):
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(status_code=400, detail='Only PDFs allowed')
+    
+    file_bytes = await file.read()
+    chunks = ingest_pdf(file_bytes, file.filename, agent.vector_store)
+    
+    return {'message': f'ingested {chunks} chunks from {file.filename}'}
 
 @app.post('/chat',response_model=ChatResponse)
 @limiter.limit(get_settings().rate_limit)

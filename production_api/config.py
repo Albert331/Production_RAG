@@ -17,6 +17,7 @@ class settings(BaseSettings):
     cache_ttl_seconds:int=300
     max_retries:int=3
 
+    database_url:str='postgresql://postgres:UE_i2U4XNM92GyV@db.olrojxeczwyhyisprpop.supabase.co:5432/postgres'
     model_config={'env_file':'.env','extra':'ignore'}
 
     @property
