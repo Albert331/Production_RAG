@@ -1,21 +1,19 @@
 import time 
 import os
 from contextlib import asynccontextmanager
-
+from datetime import datetime
 from fastapi import FastAPI,Request,HTTPException
 from fastapi.responses import JSONResponse
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from langsmith import traceable
-from dotenv import load_dotenv
-from utils import RequestTimer  
+from dotenv import load_dotenv  
 from config import get_settings
 from models import (
-    ChatResponse, chatRequest, HealthResponse, MetricResponse ,errorResponse
+    ChatResponse, chatRequest, HealthResponse, MetricResponse, errorResponse
 )
-
-from security import SecurePipeline
+from security import SecurePipeline, RequestTimer
 from cache import ResponseCache
 from monitoring import MetricsCollector
 from agent import productionAgent
@@ -70,7 +68,8 @@ async def chat(request:Request,body:chatRequest):
                 thread_id=body.thread_id,
                 model_used='cache',
                 cached=True,
-                processing_time_ms=0
+                processing_time_ms=0,
+                timestamp=datetime.utcnow().isoformat()
             )
          
         try:
@@ -84,9 +83,9 @@ async def chat(request:Request,body:chatRequest):
         response_text = result['response']
         model_used= result['model_used']
 
-        validated_response, output_warnings = security.check_output(response_text)
-        security_notes.extend(output_warnings)
-
+        is_secure,validated_response, output_warnings = security.check_output(response_text)
+        security_notes.append(output_warnings)
+       
         cache.set(cleaned,validated_response)
 
 
@@ -95,6 +94,10 @@ async def chat(request:Request,body:chatRequest):
             thread_id=body.thread_id,
             model_used=model_used,
             cached=False,
-            processing_time_ms=round(timer.elapsed_ms,2)
-
+            processing_time_ms=round(timer.elapsed_ms,2),
+            timestamp=datetime.utcnow().isoformat()
         )
+    
+
+
+print('hello world')    

@@ -43,4 +43,4 @@ class MetricResponse(BaseModel):
 class errorResponse(BaseModel):
     error:str
     detail:str|None = None
-    request_id = str|None = None
+    request_id : str|None = None

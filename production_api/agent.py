@@ -23,12 +23,14 @@ class productionAgent:
 
            self.primary_llm = ChatOllama(
                 model=settings.primary_model,
-                temprature=0,
+                temperature=0,
+                base_url="http://host.docker.internal:11434"
            )
 
            self.fallback_llm = ChatOllama(
                 model=settings.fallback_model,
                 temprature=0,
+                base_url="http://host.docker.internal:11434"
            )   
 
            self.max_retries = settings.max_retries
@@ -137,16 +139,3 @@ class productionAgent:
         
 
 
-def demo_message_passing():
-    """Demo message passing between agents."""
-    agent = productionAgent()
-
-    print("Message Passing Demo:\n")
-
-    result = agent.invoke("What are the main benefits of renewable energy?")
-    
-
-  
-    print(f"{result['response']}")
-
-demo_message_passing()

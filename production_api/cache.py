@@ -16,26 +16,32 @@ class ResponseCache:
     def get(self,query:str)-> Optional[str]:
         key = self._make_key(query)
 
-        if key in self._cache:
-            entry = self._cache[key]
+        if key in self.cache:
+            entry = self.cache[key]
 
             if time.time() - entry['timestamp'] < self.ttl:
-                self._hits += 1
+                self.hits += 1
                 return entry['response']
             else:
-                del self._cache[key]
+                del self.cache[key]
 
         self._misses+=1
         return None        
     
+    def set(self, query: str, response: str) -> None:
+        key = self._make_key(query)
+        self.cache[key] = {
+            'response': response,
+            'timestamp': time.time()
+    }
 
     @property
     def stats(self)-> dict:
-        total = self._hits + self._misses 
-        hit_rate = self._hits / total if total > 0 else 0.0
+        total = self.hits + self._misses 
+        hit_rate = self.hits / total if total > 0 else 0.0
         return {
-            'hits':self._hits,
+            'hits':self.hits,
             'misses':self._misses,
             'hit_rate':f"{hit_rate:.1%}",
-            'cached_entries': len(self._cache),
+            'cached_entries': len(self.cache),
         }
